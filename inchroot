@@ -18,7 +18,7 @@ python3 /usr/local/bin/hostnamegen > /etc/hostname
 
 # Main
 ln -sf "/usr/share/zoneinfo/${zone}" /etc/localtime
-useradd -m -G 'wheel,video' -s /usr/bin/zsh "${name}"
+useradd -m -G 'wheel,video' -s /usr/bin/bash "${name}"
 echo "${name}:${password}" | chpasswd
 pacman -Scc --noconfirm
 
@@ -29,7 +29,7 @@ systemctl mask NetworkManager-wait-online
 if [[ "${sboot}" == 'y' ]]; then
   sbctl create-keys
   sbctl enroll-keys --microsoft
-  sbctl sign -s /boot/vmlinuz-linux-zen
+  sbctl sign -s /boot/vmlinuz-linux-lts
   sbctl sign -s -o /usr/lib/systemd/boot/efi/systemd-bootx64.efi{.signed,}
 fi
 
