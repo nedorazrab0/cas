@@ -25,7 +25,8 @@ parts="${blk}"*?
 [[ "${sboot}" == 'y' ]] && sbpkg='sbctl'
 
 # Configure pacman
-cp /tmp/cas/cfg/etc/pacman.conf /etc/pacman.conf
+curl -f "https://raw.githubusercontent.com/nedorazrab0/cas/refs/heads/main/\
+cfg/etc/pacman.conf" -o /etc/pacman.conf
 
 echo '- Configuring mirrors...'
 mlist='/etc/pacman.d/mirrorlist'
