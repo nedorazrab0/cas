@@ -1,0 +1,45 @@
+name: rls
+on: workflow_dispatch
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete old release
+        run: gh release delete rolling --cleanup-tag -y || true
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Install pkgs
+        run: |
+          sudo apt-get update
+          sudo apt-get install xxhash libarchive-tools
+
+      - name: Archive cfg/
+        run: |
+          chmod -R 755 ./cfg/usr/local/bin
+          bsdtar -b1 -C ./cfg -cv . > ./cfg.tar
+          rm -rf ./cfg
+
+      - name: Compress
+        run: |
+          bsdtar \
+            --exclude-vcs --exclude=./{.github/,README.md} -b1 -cv ./* \
+            | lz4 -12zvc > ./cas.tar.lz4
+
+      - name: Calculate hash
+        run: |
+          echo "xxh=$(xxhsum -H2 ./cas.tar.lz4 | cut -d ' ' -f1)" \
+            | tee -a "${GITHUB_ENV}"
+
+      - name: Release
+        run: |
+          printf "XXH128:\n\`${xxh}\`" \
+            | gh release create rolling ./cas.tar.lz4 -F-
+        env:
+          GH_TOKEN: ${{ github.token }}

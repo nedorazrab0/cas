@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Finish up the installation
+set -e
+
+flatpak install flathub \
+  org.kde.krita org.onlyoffice.desktopeditors \
+  io.mpv.Mpv net.waterfox.waterfox --noninteractive

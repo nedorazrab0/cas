@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# System tune in chroot
+set -e
+
+name="${1}"
+password="${2}"
+zone="${3}"
+sboot="${4}"
+
+echo '- CHROOT'
+
+# Tune the system
+bsdtar --uid 0 --gid 0 -x -f /mnt/cfg.tar -C /
+
+hwclock -w --utc
+python3 /usr/local/bin/hostnamegen > /etc/hostname
+
+# Main
+ln -sf "/usr/share/zoneinfo/${zone}" /etc/localtime
+useradd -m -G 'wheel,video' -s /usr/bin/zsh "${name}"
+echo "${name}:${password}" | chpasswd
+pacman -Scc --noconfirm
+
+systemctl enable systemd-timesyncd NetworkManager fstrim.timer reflector.timer
+systemctl mask NetworkManager-wait-online
+
+# Secure Boot setup
+if [[ "${sboot}" == 'y' ]]; then
+  sbctl create-keys
+  sbctl enroll-keys --microsoft
+  sbctl sign -s /boot/vmlinuz-linux-zen
+  sbctl sign -s -o /usr/lib/systemd/boot/efi/systemd-bootx64.efi{.signed,}
+fi
+
+# systemd-boot
+bootctl install --esp-path=/boot
+
+echo '- Exiting chroot'

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+#
+# Short pacman
+set -e
+
+if [[ -n "${@}" ]]; then
+  pacman "${@}"
+else
+  (( $(id -u) != 0 )) && exit 1
+  pacman -Scc --noconfirm
+fi

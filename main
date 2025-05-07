@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+#
+# Arch install
+set -e
+
+# Configure script
+echo '- Username:'
+read -r name
+echo '- Password:'
+stty -echo  # Do not expose a password
+read -r password
+stty echo
+echo '- Timezone (e.g. Europe/Moscow):'
+read -r zone
+echo '- Target disk name:'
+read -r disk
+echo '- Do you want Secure Boot?
+  Make sure you are in the "setup mode"
+  or cleared your Secure Boot keys! (y/N)'
+read -r sboot
+
+sysblock="/sys/block/${disk}"
+blk="/dev/${disk}"
+parts="${blk}"*?
+[[ "${sboot}" == 'y' ]] && sbpkg='sbctl'
+
+# Configure pacman
+cp /tmp/cas/cfg/etc/pacman.conf /etc/pacman.conf
+
+echo '- Configuring mirrors...'
+mlist='/etc/pacman.d/mirrorlist'
+
+# Wait for reflector complete the sync
+grep -q 'Reflector' "${mlist}" || systemctl start --no-block reflector
+until grep -q 'Reflector' "${mlist}"; do
+  sleep 1
+done
+
+pacman-key --init
+pacman-key --populate archlinux
+pacman -Syy archlinux-keyring --needed --noconfirm
+
+# Disk tune
+echo 'none' > "${sysblock}/queue/scheduler"
+echo '128' > "${sysblock}/queue/nr_requests"
+echo '2' > "${sysblock}/queue/rq_affinity"
+
+# Disk partition
+cd /
+mountpoint -q /mnt && umount -vR /mnt
+umount -v "${blk}"* || true
+
+wipefs --all "${parts}" || true
+wipefs --all "${blk}"
+blkdiscard -vf "${blk}" || true
+sgdisk -Zo \
+  -n1::+64M -t1:ef00 -c1:'EFI System Partition' \
+  -n2::+ -t2:8304 -c2:'Arch Linux Root' -p "${blk}"
+
+bootpart="${blk}"*1
+rootpart="${blk}"*2
+
+mkfs.fat -F32 -n 'ESP' -v -S512 --codepage=437 ${bootpart}
+mkfs.btrfs -fK -L 'archlinux' -O 'block-group-tree' \
+  -n65536 --csum xxhash -m single ${rootpart}
+
+mount -t btrfs -v -o "noatime,nodiscard,nobarrier,\
+commit=300,lazytime,compress-force=zstd:3" ${rootpart} /mnt
+mount -t vfat -v -o "noexec,nodev,nosuid,noatime,utf8=false,\
+fmask=0177,dmask=0077,lazytime,X-mount.mkdir=600" ${bootpart} /mnt/boot
+
+# Install
+mountpoint -q /var/cache/pacman/pkg && hostcache='-c'
+pacstrap ${hostcache} /mnt \
+  base linux-lts booster linux-firmware amd-ucode \
+  btrfs-progs exfatprogs dosfstools \
+  flatpak zram-generator \
+  nano reflector gamescope mandoc less xxhash pigz unzip \
+  gnome networkmanager vulkan-radeon mesa iptables-nft \
+  nano bash-completion ${sbpkg}
+
+# Chroot actions
+mount -o 'bind,ro' -v /tmp/cas /mnt/mnt
+arch-chroot /mnt bash /mnt/inchroot \
+  "${name}" "${password}" "${zone}" "${sboot}" "${lang}"
+umount -v /mnt/mnt
+
+# end
+echo '- Goodbye ;)'
+sleep 2
+umount -vR /mnt
+exec systemctl poweroff
