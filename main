@@ -75,10 +75,10 @@ mountpoint -q /var/cache/pacman/pkg && hostcache='-c'
 pacstrap ${hostcache} /mnt \
   base linux-lts booster linux-firmware amd-ucode \
   btrfs-progs exfatprogs dosfstools \
-  flatpak zram-generator \
   nano reflector gamescope mandoc less xxhash pigz unzip \
-  gnome networkmanager vulkan-radeon mesa iptables-nft \
-  nano bash-completion ${sbpkg}
+  flatpak zram-generator nano bash-completion \
+  gnome-shell gnome-text-editor gnome-console gdm \
+  networkmanager vulkan-radeon mesa iptables-nft ${sbpkg}
 
 # Chroot actions
 mount -o 'bind,ro' -v /tmp/cas /mnt/mnt
@@ -87,7 +87,7 @@ arch-chroot /mnt bash /mnt/inchroot \
 umount -v /mnt/mnt
 
 # end
-echo '- Goodbye ;)'
+echo '- That is all'
 sleep 2
 umount -vR /mnt
 exec systemctl poweroff
