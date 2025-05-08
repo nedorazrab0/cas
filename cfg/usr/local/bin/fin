@@ -3,6 +3,19 @@
 # Finish up the installation
 set -e
 
+# gsettings
+gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+gsettings set org.gnome.settings-daemon.plugins.power \
+  power-button-action shutdown
+
+gsettings set org.gnome.desktop.privacy remove-old-temp-files true
+gsettings set org.gnome.desktop.privacy remove-old-trash-files true
+
+gsettings set org.gnome.nautilus.preferences recursive-search always
+gsettings set org.gnome.nautilus.preferences show-image-thumbnails always
+gsettings set org.gnome.nautilus.preferences show-directory-item-counts always
+
+# Flatpak
 flatpak install flathub \
   org.kde.krita org.onlyoffice.desktopeditors \
   io.mpv.Mpv net.waterfox.waterfox --noninteractive
