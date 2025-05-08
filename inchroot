@@ -12,6 +12,7 @@ echo '- CHROOT'
 
 # Tune the system
 bsdtar --uid 0 --gid 0 -x -f /mnt/cfg.tar -C /
+ln -svf /usr/bin/run0 /usr/local/bin/sudo
 
 hwclock -w --utc
 python3 /usr/local/bin/hostnamegen > /etc/hostname
@@ -22,8 +23,9 @@ useradd -m -G 'wheel,video' -s /usr/bin/bash "${name}"
 echo "${name}:${password}" | chpasswd
 pacman -Scc --noconfirm
 
-systemctl enable systemd-timesyncd NetworkManager fstrim.timer reflector.timer
 systemctl mask NetworkManager-wait-online
+systemctl enable systemd-timesyncd NetworkManager gdm \
+  fstrim.timer reflector.timer
 
 # Secure Boot setup
 if [[ "${sboot}" == 'y' ]]; then
