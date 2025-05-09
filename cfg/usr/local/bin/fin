@@ -4,16 +4,17 @@
 set -e
 
 # gsettings
-gsettings set org.gnome.desktop.interface color-scheme prefer-dark
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 gsettings set org.gnome.settings-daemon.plugins.power \
-  power-button-action shutdown
+  power-button-action 'interactive'
 
 gsettings set org.gnome.desktop.privacy remove-old-temp-files true
 gsettings set org.gnome.desktop.privacy remove-old-trash-files true
 
-gsettings set org.gnome.nautilus.preferences recursive-search always
-gsettings set org.gnome.nautilus.preferences show-image-thumbnails always
-gsettings set org.gnome.nautilus.preferences show-directory-item-counts always
+gsettings set org.gnome.nautilus.preferences recursive-search 'always'
+gsettings set org.gnome.nautilus.preferences show-image-thumbnails 'always'
+gsettings set org.gnome.nautilus.preferences \
+  show-directory-item-counts 'always'
 
 # Flatpak
 flatpak install flathub \
