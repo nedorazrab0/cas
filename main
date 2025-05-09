@@ -41,11 +41,6 @@ pacman-key --init
 pacman-key --populate archlinux
 pacman -Syy archlinux-keyring --needed --noconfirm
 
-# Disk tune
-echo 'none' > "${sysblock}/queue/scheduler"
-echo '128' > "${sysblock}/queue/nr_requests"
-echo '2' > "${sysblock}/queue/rq_affinity"
-
 # Disk partition
 cd /
 mountpoint -q /mnt && umount -vR /mnt
