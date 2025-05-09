@@ -76,14 +76,15 @@ pacstrap ${hostcache} /mnt \
   base linux-lts booster linux-firmware amd-ucode \
   btrfs-progs exfatprogs dosfstools \
   nano reflector gamescope mandoc less xxhash pigz unzip \
-  flatpak zram-generator nano bash-completion \
-  gnome-shell gnome-text-editor gnome-console gdm \
+  flatpak zram-generator nano openssl bash-completion \
+  gnome-{shell,text-editor,console,control-center,backgrounds} \
+  gnome-{disk-utility,keyring,software} gdm sushi gvfs-mtp
   networkmanager vulkan-radeon mesa iptables-nft ${sbpkg}
 
 # Chroot actions
 mount -o 'bind,ro' -v /tmp/cas /mnt/mnt
 arch-chroot /mnt bash /mnt/inchroot \
-  "${name}" "${password}" "${zone}" "${sboot}" "${lang}"
+  "${name}" "${password}" "${zone}" "${sboot}"
 umount -v /mnt/mnt
 
 # end
