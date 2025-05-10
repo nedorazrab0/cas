@@ -73,7 +73,7 @@ pacstrap ${hostcache} /mnt \
   nano reflector gamescope mandoc less xxhash pigz unzip \
   flatpak zram-generator nano openssl bash-completion \
   gnome-{shell,text-editor,console,control-center,backgrounds} \
-  gnome-{disk-utility,keyring,software} gdm sushi gvfs-mtp
+  gnome-{disk-utility,keyring,software} gdm sushi gvfs-mtp \
   networkmanager vulkan-radeon mesa iptables-nft ${sbpkg}
 
 # Chroot actions
